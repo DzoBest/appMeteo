@@ -1,0 +1,23 @@
+[project]
+name = "appmeteo"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "dzobest", email = "junioromaxdeparis@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi[standard]>=0.142.2",
+    "requests>=2.34.2",
+]
+
+[project.scripts]
+appmeteo = "appmeteo:main"
+
+[tool.fastapi]
+entrypoint = "appmeteo.main:app"
+
+[build-system]
+requires = ["uv_build>=0.12.23,<0.13.0"]
+build-backend = "uv_build"
