@@ -1,19 +1,9 @@
-import requests
 from fastapi import FastAPI
+from appmeteo.api.routes.weather import router as weather_router
 
-app = FastAPI()
+app = FastAPI(
+    title = "weather data plateform",
+    version  = "0.1.0"
+    )
 
-URL = "https://api.open-meteo.com/v1/forecast"
-
-
-@app.get("/meteo")
-def meteo(lat: float = 49.4432, lon: float = 1.0993):
-    params = {
-        "latitude": lat,
-        "longitude": lon,
-        "current": ["temperature_2m", "relative_humidity_2m", "weather_code"],
-        "timezone": "Europe/Paris",
-    }
-    response = requests.get(URL, params=params)
-    response.raise_for_status()
-    return response.json()["current"]
+app.include_router(weather_router)
