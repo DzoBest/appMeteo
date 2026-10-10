@@ -1,16 +1,30 @@
+from contextlib import asynccontextmanager
+from collections.abc import AsyncGenerator
 from fastapi import FastAPI
-from appmeteo.api.routes.weather import router as weather_router
+
+from appmeteo.api.routes import weather
 from appmeteo.core.config import settings
+from appmeteo.core.db import init_db
+import appmeteo.models  # Permet à SQLModel d'enregistrer les modèles avant init_db
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    # Code exécuté AU DÉMARRAGE de FastAPI
+    await init_db()
+    yield
+    # Code exécuté À L'ARRÊT de FastAPI (si besoin de fermer des connexions)
+
 
 app = FastAPI(
     title=settings.app_name,
-    version=settings.app_version,
-    description="API for fetching weather data from Open-Meteo",
+    debug=settings.debug,
+    lifespan=lifespan,
 )
 
-app.include_router(weather_router)
+app.include_router(weather.router)
 
 
-@app.get("/health", tags=["Health"])
-def health_check() -> dict:
-    return {"status": "ok", "app": settings.app_name, "version": settings.app_version}
+@app.get("/", tags=["Health"])
+async def health_check() -> dict[str, str]:
+    return {"status": "ok", "app": settings.app_name}
