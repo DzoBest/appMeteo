@@ -1,6 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 from sqlmodel import SQLModel, Field, Column
+from sqlalchemy import DateTime
 from sqlalchemy.dialects.postgresql import JSONB
 
 
@@ -8,13 +9,16 @@ class WeatherMeasurement(SQLModel, table=True):
     __tablename__ = "weather_measurements"
 
     id: int | None = Field(default=None, primary_key=True)
-    recorded_at: datetime = Field(default_factory=datetime.utcnow, index=True)
+    recorded_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(DateTime(timezone=True), nullable=False, index=True),
+    )
     latitude: float = Field(index=True)
     longitude: float = Field(index=True)
-    temperature: float
-    humidity: float | None = None
+    timezone: str | None = None
+    temperature_2m: float
+    relative_humidity_2m: int | None = None
     weather_code: int | None = None
-    wind_speed: float | None = None
 
-    # Couche Bronze : stockage du JSON brut complet envoyé par l'API
+    # Couche Bronze : stockage du payload JSON complet
     raw_payload: dict[str, Any] = Field(default={}, sa_column=Column(JSONB))
