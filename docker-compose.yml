@@ -11,6 +11,17 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+  api:
+    build: .
+    container_name: appmeteo_api
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      # Attention ici l'hôte n'est plus "localhost" mais "db" (le nom du service Docker !)
+      DATABASE_URL: "postgresql+asyncpg://appmeteo:appmeteo@db:5432/appmeteo"
+    depends_on:
+      - db
 
 volumes:
   postgres_data:

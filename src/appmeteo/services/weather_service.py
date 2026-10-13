@@ -1,6 +1,7 @@
 from sqlmodel.ext.asyncio.session import AsyncSession
 from appmeteo.clients.open_meteo_client import get_current_weather
 from appmeteo.models.weather_measurement import WeatherMeasurement
+from appmeteo.repositories.weather_repository import WeatherRepository
 from appmeteo.schemas.weather import WeatherResponse
 
 
@@ -9,6 +10,9 @@ async def get_weather(
     longitude: float,
     session: AsyncSession,
 ) -> WeatherResponse:
+
+    # 0. Initialisation du repository avec la session courante
+    weather_repo = WeatherRepository(session=session)
     # 1. Appel du client externe (renvoie un dictionnaire)
     raw_data = await get_current_weather(latitude, longitude)
 
@@ -26,10 +30,8 @@ async def get_weather(
         raw_payload=raw_data,  # Couche Bronze
     )
 
-    # 4. Sauvegarde dans PostgreSQL
-    session.add(measurement)
-    await session.commit()
-    await session.refresh(measurement)
+    # 4. Délégation de la persistence au WeatherRepository
+    await weather_repo.create(measurement)
 
     # 5. Retour de la réponse
     return weather_data
