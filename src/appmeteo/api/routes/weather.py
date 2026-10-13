@@ -1,5 +1,7 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
+from sqlmodel.ext.asyncio.session import AsyncSession
 
+from appmeteo.core.db import get_session
 from appmeteo.schemas.weather import WeatherResponse
 from appmeteo.services.weather_service import get_weather
 
@@ -10,7 +12,7 @@ router = APIRouter(prefix="/weather", tags=["Weather"])
     "",
     response_model=WeatherResponse,
     summary="Get current weather",
-    description="Retrieve current meteorological conditions for given geographic coordinates.",
+    description="Retrieve current meteorological conditions for given geographic coordinates and save them.",
 )
 async def get_current_weather_endpoint(
     lat: float = Query(
@@ -27,5 +29,6 @@ async def get_current_weather_endpoint(
         description="Longitude of the location (-180 to 180)",
         examples=[1.0993],
     ),
+    session: AsyncSession = Depends(get_session),
 ) -> WeatherResponse:
-    return await get_weather(latitude=lat, longitude=lon)
+    return await get_weather(latitude=lat, longitude=lon, session=session)
