@@ -9,6 +9,7 @@ class WeatherMeasurement(SQLModel, table=True):
     __tablename__ = "weather_measurements"
 
     id: int | None = Field(default=None, primary_key=True)
+    city_name: str | None = Field(default=None, index=True)
     recorded_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),
         sa_column=Column(DateTime(timezone=True), nullable=False, index=True),
