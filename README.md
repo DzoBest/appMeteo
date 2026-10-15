@@ -1,64 +1,92 @@
 # AppMeteo - Plateforme de Données Météorologiques
 
-API REST moderne et performante construite avec **FastAPI**, **Pydantic** et **HTTPX**, permettant de récupérer les conditions météorologiques actuelles à partir du service Open-Meteo.
+API REST et pipeline d'ingestion de données météorologiques construits avec **FastAPI**, **SQLModel**, **PostgreSQL**, **Docker**, et **Open-Meteo**.
 
 ---
 
 ## 🌟 Fonctionnalités
 
-- **Architecture en couches :** Séparation claire entre routes d'API, logique métier (services), clients externes et schémas de données.
-- **I/O Asynchrone :** Utilisation de `httpx.AsyncClient` et endpoints asynchrones (`async def`) pour des performances et une scalabilité optimales.
-- **Validation stricte & Typage :** Modèles Pydantic v2 assurant la validation des requêtes et réponses ainsi qu'une documentation Swagger/OpenAPI auto-générée.
-- **Gestion centralisée de la configuration :** Prise en charge des variables d'environnement (`.env`) avec `pydantic-settings`.
-- **Gestion des erreurs et Résilience :** Gestion propre des statuts HTTP, timeouts et erreurs de connectivité du service tiers.
-- **Tests automatisés :** Suite de tests unitaires et d'intégration avec `pytest`.
+- **Clean Architecture en couches :** Séparation stricte entre les Routes (`api/routes`), la logique métier (`services`), l'accès aux données (`repositories`), les clients externes (`clients`), les modèles BDD (`models`) et les contrats d'échange (`schemas`).
+- **Base de Données & ORM Asynchrone :** Persistance dans **PostgreSQL 16** via **SQLModel** et le driver asynchrone ultra-performant **asyncpg**.
+- **Architecture Data Médaillon :**
+  - **Couche Bronze :** Stockage du payload JSON brut complet (`raw_payload` en format `JSONB`) pour une traçabilité totale et le rejeu de données.
+  - **Couche Silver :** Données structurées, typées et indexées (`temperature_2m`, `city_name`, `recorded_at`, etc.).
+- **Ingestion par lots (Batch) Parallélisée :** Collecte simultanée des relevés de plusieurs villes de référence grâce à `asyncio.gather`.
+- **Conteneurisation complète avec Docker Compose :** Déploiement et exécution d'un seul bloc (API FastAPI + BDD PostgreSQL avec volume persistant).
+- **Validation stricte & Typage :** Modèles Pydantic v2 assurant la validation des requêtes et réponses avec documentation Swagger/OpenAPI interactive.
 
 ---
 
 ## 🚀 Installation & Démarrage
 
-### Prérequis
+### Option 1 : Avec Docker Compose (Recommandé)
 
-- Python >= 3.12
-- [uv](https://docs.astral.sh/uv/) (recommandé) ou `pip`
+Prérequis : [Docker Desktop](https://www.docker.com/) installé et lancé.
 
-### 1. Cloner et installer les dépendances
+1. **Lancer l'application et la base de données :**
+   ```bash
+   docker compose up -d --build
+   ```
 
-Avec `uv` :
-```bash
-uv sync
-```
+2. **Vérifier l'état des conteneurs :**
+   ```bash
+   docker compose ps
+   ```
 
-### 2. Configuration (Optionnel)
+3. **Arrêter les services :**
+   ```bash
+   docker compose down
+   ```
+   *(Pour réinitialiser complètement la base de données et les volumes : `docker compose down -v`)*
 
-Vous pouvez créer un fichier `.env` à la racine pour surcharger les valeurs par défaut :
-```env
-APP_NAME="Weather Data Platform"
-OPEN_METEO_URL="https://api.open-meteo.com/v1/forecast"
-DEFAULT_TIMEZONE="Europe/Paris"
-REQUEST_TIMEOUT_SECONDS=10.0
-```
+---
 
-### 3. Lancer l'application
+### Option 2 : Développement Local (avec Python & uv)
 
-```bash
-uv run fastapi dev src/appmeteo/main.py
-```
+Prérequis : Python >= 3.12, [uv](https://docs.astral.sh/uv/) et PostgreSQL lancé (ex. via `docker compose up -d db`).
+
+1. **Installer les dépendances :**
+   ```bash
+   uv sync
+   ```
+
+2. **Lancer le serveur de développement :**
+   ```bash
+   uv run fastapi dev
+   ```
 
 L'application sera accessible sur : `http://127.0.0.1:8000`
 
 ---
 
-## 📚 Documentation API & Endpoints
+## 📚 Endpoints & Documentation API
 
-Une fois le serveur démarré, la documentation interactive est disponible sur :
+Documentation interactive disponible sur :
 - **Swagger UI :** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 - **ReDoc :** [http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc)
 
-### Endpoints principaux
+### Endpoints disponibles :
 
-- `GET /health` : Vérification de l'état de l'API.
-- `GET /weather?lat=49.4432&lon=1.0993` : Récupère la météo actuelle pour des coordonnées données.
+| Méthode | Route | Description |
+| :--- | :--- | :--- |
+| `GET` | `/` | Health Check et statut de l'application |
+| `GET` | `/weather` | Récupère la météo actuelle pour des coordonnées GPS (`lat`, `lon`) et l'enregistre en base |
+| `POST` | `/weather/ingest` | Déclenche l'ingestion par lots en parallèle pour toutes les villes configurées |
+| `GET` | `/weather/history` | Récupère l'historique des relevés enregistrés pour des coordonnées GPS données |
+
+---
+
+## 🔍 Commandes Utiles pour la Base de Données
+
+Inspecter directement les données dans PostgreSQL :
+
+```powershell
+# Afficher les 15 derniers relevés ingérés
+docker exec -it appmeteo_db psql -U appmeteo -d appmeteo -c "SELECT id, city_name, temperature_2m, relative_humidity_2m, recorded_at FROM weather_measurements ORDER BY id DESC LIMIT 15;"
+
+# Afficher la structure de la table
+docker exec -it appmeteo_db psql -U appmeteo -d appmeteo -c "\d weather_measurements"
+```
 
 ---
 
