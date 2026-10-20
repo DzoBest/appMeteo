@@ -1,0 +1,20 @@
+version: 2
+
+models:
+  - name: silver_weather
+    description: "Données météorologiques  nettoyées et validées pour la couche Silver"
+    columns:
+      - name: city_name
+        description: "Nom de la ville concernées."
+        data_tests:
+          - not_null
+
+      - name: temperature_2m
+        description: "Température mesurée en degrés Celsius."
+        data_tests:
+          - not_null
+
+      - name: recorded_at
+        description: "Horodatage de la mesure"
+        data_tests:
+          - not_null

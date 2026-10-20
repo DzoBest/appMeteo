@@ -1,0 +1,112 @@
+[0m19:46:13.206770 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000001C2A5980200>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000001C2A8FC6FF0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000001C2A6EB9CD0>]}
+
+
+============================== 19:46:13.215187 | e0c24812-1c6d-4148-9a35-ece18db57e98 ==============================
+[0m19:46:13.215187 [info ] [MainThread]: Running with dbt=1.13.0-b1
+[0m19:46:13.218556 [debug] [MainThread]: running dbt with arguments {'maximum_seed_size_mib': '1', 'no_print': 'None', 'version_check': 'True', 'target_path': 'None', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'static_parser': 'True', 'printer_width': '80', 'write_json': 'True', 'introspect': 'True', 'log_cache_events': 'False', 'empty': 'None', 'cache_selected_only': 'False', 'fail_fast': 'False', 'debug': 'False', 'log_format': 'default', 'profiles_dir': 'C:\\Users\\lenovo\\.dbt', 'send_anonymous_usage_stats': 'True', 'quiet': 'False', 'warn_error': 'None', 'partial_parse': 'True', 'invocation_command': 'dbt init transform_meteo', 'hints_enabled': 'True', 'indirect_selection': 'eager', 'use_experimental_parser': 'False', 'use_colors': 'True', 'log_path': 'logs'}
+[0m19:46:13.219559 [debug] [MainThread]: Tracking: tracking
+[0m19:46:13.258674 [info ] [MainThread]: Creating dbt configuration folder at C:\Users\lenovo\.dbt
+[0m19:46:13.264403 [debug] [MainThread]: Starter project path: L:\springboot\appMeteo\.venv\Lib\site-packages\dbt\include\starter_project
+[0m19:46:13.287515 [info ] [MainThread]: Setting up your profile.
+[0m19:57:23.917250 [info ] [MainThread]: Profile transform_meteo written to C:\Users\lenovo\.dbt\profiles.yml using target's profile_template.yml and your supplied values.
+[0m19:57:23.922460 [info ] [MainThread]: Running dbt debug to validate the project...
+[0m19:57:23.924748 [info ] [MainThread]: dbt version: 1.13.0-b1
+[0m19:57:23.926534 [info ] [MainThread]: python version: 3.12.1
+[0m19:57:23.927571 [info ] [MainThread]: python path: L:\springboot\appMeteo\.venv\Scripts\python.exe
+[0m19:57:23.930844 [info ] [MainThread]: os info: Windows-11-10.0.26300-SP0
+[0m19:57:24.005133 [info ] [MainThread]: Using profiles dir at C:\Users\lenovo\.dbt
+[0m19:57:24.006242 [info ] [MainThread]: Using profiles.yml file at C:\Users\lenovo\.dbt\profiles.yml
+[0m19:57:24.007311 [info ] [MainThread]: Using dbt_project.yml file at L:\springboot\appMeteo\transform_meteo\dbt_project.yml
+[0m19:57:24.008910 [info ] [MainThread]: adapter type: postgres
+[0m19:57:24.009968 [info ] [MainThread]: adapter version: 1.11.0
+[0m19:57:24.172869 [info ] [MainThread]: Configuration:
+[0m19:57:24.172869 [info ] [MainThread]:   profiles.yml file [[32mOK found and valid[0m]
+[0m19:57:24.172869 [info ] [MainThread]:   dbt_project.yml file [[32mOK found and valid[0m]
+[0m19:57:24.172869 [info ] [MainThread]: Required dependencies:
+[0m19:57:24.178466 [debug] [MainThread]: Executing "git --help"
+[0m19:57:24.246581 [debug] [MainThread]: STDOUT: "b"usage: git [-v | --version] [-h | --help] [-C <path>] [-c <name>=<value>]\n           [--exec-path[=<path>]] [--html-path] [--man-path] [--info-path]\n           [-p | --paginate | -P | --no-pager] [--no-replace-objects] [--no-lazy-fetch]\n           [--no-optional-locks] [--no-advice] [--bare] [--git-dir=<path>]\n           [--work-tree=<path>] [--namespace=<name>] [--config-env=<name>=<envvar>]\n           <command> [<args>]\n\nThese are common Git commands used in various situations:\n\nstart a working area (see also: git help tutorial)\n   clone      Clone a repository into a new directory\n   init       Create an empty Git repository or reinitialize an existing one\n\nwork on the current change (see also: git help everyday)\n   add        Add file contents to the index\n   mv         Move or rename a file, a directory, or a symlink\n   restore    Restore working tree files\n   rm         Remove files from the working tree and from the index\n\nexamine the history and state (see also: git help revisions)\n   bisect     Use binary search to find the commit that introduced a bug\n   diff       Show changes between commits, commit and working tree, etc\n   grep       Print lines matching a pattern\n   log        Show commit logs\n   show       Show various types of objects\n   status     Show the working tree status\n\ngrow, mark and tweak your common history\n   backfill   Download missing objects in a partial clone\n   branch     List, create, or delete branches\n   commit     Record changes to the repository\n   merge      Join two or more development histories together\n   rebase     Reapply commits on top of another base tip\n   reset      Reset current HEAD to the specified state\n   switch     Switch branches\n   tag        Create, list, delete or verify a tag object signed with GPG\n\ncollaborate (see also: git help workflows)\n   fetch      Download objects and refs from another repository\n   pull       Fetch from and integrate with another repository or a local branch\n   push       Update remote refs along with associated objects\n\n'git help -a' and 'git help -g' list available subcommands and some\nconcept guides. See 'git help <command>' or 'git help <concept>'\nto read about a specific subcommand or concept.\nSee 'git help git' for an overview of the system.\n""
+[0m19:57:24.247796 [debug] [MainThread]: STDERR: "b''"
+[0m19:57:24.248801 [info ] [MainThread]:  - git [[32mOK found[0m]
+
+[0m19:57:24.248801 [info ] [MainThread]: Connection:
+[0m19:57:24.249833 [info ] [MainThread]:   host: appmeteo_db
+[0m19:57:24.250830 [info ] [MainThread]:   port: 5432
+[0m19:57:24.250830 [info ] [MainThread]:   user: dzobest
+[0m19:57:24.250830 [info ] [MainThread]:   database: appmeteo
+[0m19:57:24.252374 [info ] [MainThread]:   schema: public
+[0m19:57:24.252374 [info ] [MainThread]:   connect_timeout: 10
+[0m19:57:24.253382 [info ] [MainThread]:   role: None
+[0m19:57:24.253382 [info ] [MainThread]:   search_path: None
+[0m19:57:24.254815 [info ] [MainThread]:   keepalives_idle: 0
+[0m19:57:24.255813 [info ] [MainThread]:   sslmode: None
+[0m19:57:24.255813 [info ] [MainThread]:   sslcert: None
+[0m19:57:24.256848 [info ] [MainThread]:   sslkey: None
+[0m19:57:24.256848 [info ] [MainThread]:   sslrootcert: None
+[0m19:57:24.257848 [info ] [MainThread]:   application_name: dbt
+[0m19:57:24.257848 [info ] [MainThread]:   autocommit: False
+[0m19:57:24.259428 [info ] [MainThread]:   retries: 1
+[0m19:57:24.260474 [info ] [MainThread]: Registered adapter: postgres=1.11.0
+[0m19:57:24.752662 [debug] [MainThread]: Acquiring new postgres connection 'debug'
+[0m19:57:24.897596 [debug] [MainThread]: Using postgres connection "debug"
+[0m19:57:24.898613 [debug] [MainThread]: On debug: select 1 as id
+[0m19:57:24.899618 [debug] [MainThread]: Opening a new connection, currently in state init
+[0m19:57:27.606511 [debug] [MainThread]: Postgres adapter: Got a retryable error when attempting to open a postgres connection.
+1 attempts remaining. Retrying in 0 seconds.
+Error:
+could not translate host name "appmeteo_db" to address: Name or service not known
+
+[0m19:57:30.313210 [debug] [MainThread]: Postgres adapter: Error running SQL: select 1 as id
+[0m19:57:30.314730 [debug] [MainThread]: Postgres adapter: Rolling back transaction.
+[0m19:57:30.315742 [debug] [MainThread]: On debug: No close available on handle
+[0m19:57:30.317388 [info ] [MainThread]:   Connection test: [[31mERROR[0m]
+
+[0m19:57:30.318369 [info ] [MainThread]: [31m1 check failed:[0m
+[0m19:57:30.318369 [info ] [MainThread]: dbt was unable to connect to the specified database.
+The database returned the following error:
+
+  >Database Error
+  could not translate host name "appmeteo_db" to address: Name or service not known
+  
+
+Check your database credentials and try again. For more information, visit:
+https://docs.getdbt.com/docs/configure-your-profile
+
+
+[0m19:57:30.318369 [info ] [MainThread]: Your new dbt project "transform_meteo" was created!
+Initialized new project in L:\springboot\appMeteo\transform_meteo\transform_meteo
+
+For more information on how to configure the profiles.yml file,
+please consult the dbt documentation here:
+
+  https://docs.getdbt.com/docs/configure-your-profile
+
+One more thing:
+
+Need help? Don't hesitate to reach out to us via GitHub issues or on Slack:
+
+  https://community.getdbt.com/
+
+Happy modeling!
+
+[0m19:57:30.321037 [info ] [MainThread]: [31mYour profile may need adjustments. You can find the logs of `dbt debug` above[0m
+[0m19:57:30.322548 [debug] [MainThread]: Command `dbt init` succeeded at 19:57:30.322548 after 677.74 seconds
+[0m19:57:30.325236 [debug] [MainThread]: Connection 'debug' was properly closed.
+[0m19:57:30.326336 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000001C2AAED0920>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000001C2A8B56690>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000001C2A8B56030>]}
+[0m19:57:30.326336 [debug] [MainThread]: Flushing usage events
+[0m19:57:31.438012 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m21:27:55.147702 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000002B13F185010>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000002B13D2222A0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000002B13FC157F0>]}
+
+
+============================== 21:27:55.163996 | 317c116d-9cb0-499f-97cf-b1dad1637cf0 ==============================
+[0m21:27:55.163996 [info ] [MainThread]: Running with dbt=1.13.0-b1
+[0m21:27:55.165523 [debug] [MainThread]: running dbt with arguments {'static_parser': 'True', 'no_print': 'None', 'version_check': 'True', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'target_path': 'None', 'maximum_seed_size_mib': '1', 'printer_width': '80', 'write_json': 'True', 'introspect': 'True', 'log_cache_events': 'False', 'empty': 'None', 'cache_selected_only': 'False', 'fail_fast': 'False', 'debug': 'False', 'log_format': 'default', 'partial_parse': 'True', 'send_anonymous_usage_stats': 'True', 'quiet': 'False', 'warn_error': 'None', 'profiles_dir': 'C:\\Users\\lenovo\\.dbt', 'invocation_command': 'dbt docs generate', 'hints_enabled': 'True', 'indirect_selection': 'eager', 'use_experimental_parser': 'False', 'use_colors': 'True', 'log_path': 'logs'}
+[0m21:27:55.167559 [debug] [MainThread]: Tracking: tracking
+[0m21:27:55.171321 [error] [MainThread]: [[31mERROR[0m]: Encountered an error:
+Runtime Error
+  No dbt_project.yml found at expected path L:\springboot\appMeteo\dbt_project.yml
+  Verify that each entry within packages.yml (and their transitive dependencies) contains a file named dbt_project.yml
+  
+[0m21:27:55.175920 [debug] [MainThread]: Command `dbt docs generate` failed at 21:27:55.174409 after 1.18 seconds
+[0m21:27:55.177934 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000002B13FD9F1D0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000002B13FCE1AF0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000002B13F5A38C0>]}
+[0m21:27:55.178943 [debug] [MainThread]: Flushing usage events
+[0m21:27:56.773307 [debug] [MainThread]: An error was encountered while trying to flush usage events

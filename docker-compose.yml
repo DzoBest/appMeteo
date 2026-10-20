@@ -11,6 +11,12 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U appmeteo -d appmeteo"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   api:
     build: .
     container_name: appmeteo_api
@@ -21,7 +27,63 @@ services:
       # Attention ici l'hôte n'est plus "localhost" mais "db" (le nom du service Docker !)
       DATABASE_URL: "postgresql+asyncpg://appmeteo:appmeteo@db:5432/appmeteo"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
+  airflow-init:
+    image: apache/airflow:2.9.1-python3.12
+    container_name: appmeteo_airflow_init
+    entrypoint: [ /bin/bash, -c ]
+    command:
+      - |
+        airflow db migrate
+        airflow users create \
+          --username admin \
+          --firstname Admin \
+          --lastname User \
+          --role Admin \
+          --email admin@example.com \
+          --password admin || true
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://appmeteo:appmeteo@db:5432/appmeteo
+    depends_on:
+      db:
+        condition: service_healthy
+
+  airflow-webserver:
+    image: apache/airflow:2.9.1-python3.12
+    container_name: appmeteo_airflow-webserver
+    restart: always
+    command: webserver
+    ports:
+      - "8080:8080"
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: "postgresql+psycopg2://appmeteo:appmeteo@db:5432/appmeteo"
+      AIR_WEBSERVER__SECRET_KEY: 'appmeteo_secret_key_airflow_2026'
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+
+  airflow-scheduler:
+    image: apache/airflow:2.9.1-python3.12
+    container_name: appmeteo_airflow_scheduler
+    restart: always
+    command: scheduler
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: "postgresql+psycopg2://appmeteo:appmeteo@db:5432/appmeteo"
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
 volumes:
   postgres_data:

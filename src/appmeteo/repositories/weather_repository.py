@@ -57,3 +57,5 @@ class WeatherRepository:
         )
         result = await self.session.exec(statement)
         return result.all()
+
+    
