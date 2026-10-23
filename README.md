@@ -55,10 +55,22 @@ docker-compose.yml            PostgreSQL, API et services Airflow
   schéma PostgreSQL `gold`, avec les agrégats journaliers par ville
   (température moyenne, minimale, maximale, humidité moyenne et nombre de
   mesures).
+- Dashboard Streamlit interactif permettant de :
+  - sélectionner une ville parmi celles disponibles dans la couche Silver ;
+  - consulter la date de la dernière mise à jour, le nombre de mesures du jour
+    et le nombre de mesures affichées ;
+  - visualiser les 48 dernières températures sous forme de graphique ;
+  - consulter le résumé du jour et l'historique journalier issus de la couche
+    Gold ;
+  - être averti lorsque les données ont plus de trois heures et actualiser les
+    données à la demande.
 
 ## Prérequis
 
 - [Docker Desktop](https://www.docker.com/) et Docker Compose ;
+- un clone local de ce dépôt : les dossiers `dags/`, `plugins/` et
+  `transform_meteo/` sont indispensables au fonctionnement d'Airflow et de
+  dbt ;
 - pour le développement local : Python 3.12 ou supérieur et
   [uv](https://docs.astral.sh/uv/) ;
 - pour exécuter dbt hors conteneur : dbt Core avec l'adaptateur PostgreSQL et
@@ -66,13 +78,32 @@ docker-compose.yml            PostgreSQL, API et services Airflow
 
 ## Démarrage avec Docker Compose
 
-Le démarrage recommandé lance PostgreSQL, l'API FastAPI et Airflow avec une
-image Airflow locale contenant `dbt-core` et `dbt-postgres` :
+Le projet doit être cloné avant de démarrer les services. L'image seule ne
+suffit pas : Docker Compose monte les dossiers locaux `dags/`, `plugins/` et
+`transform_meteo/` dans les conteneurs Airflow. Sans ces dossiers, Airflow ne
+trouve pas le DAG et dbt ne trouve pas `dbt_project.yml` ni ses modèles.
+
+```bash
+git clone <URL_DU_DEPOT>
+cd appMeteo
+```
+
+Le démarrage lance PostgreSQL, l'API FastAPI, le dashboard Streamlit et
+Airflow avec une image Airflow locale contenant `dbt-core` et `dbt-postgres` :
 
 ```bash
 copy transform_meteo\profiles.yml.example transform_meteo\profiles.yml
 docker compose up -d --build
 ```
+
+Les dossiers suivants sont montés automatiquement par Docker Compose :
+
+| Dossier du projet | Chemin dans Airflow | Utilisation |
+| --- | --- | --- |
+| `dags/` | `/opt/airflow/dags` | DAGs Airflow |
+| `plugins/` | `/opt/airflow/plugins` | Plugins Airflow |
+| `transform_meteo/` | `/opt/airflow/transform_meteo` | Projet dbt et profil |
+| `logs/` | `/opt/airflow/logs` | Logs Airflow |
 
 Le fichier `transform_meteo/profiles.yml` est ignoré par Git. Il lit les
 paramètres de connexion dans les variables `DBT_DB_HOST`, `DBT_DB_PORT`,
@@ -94,11 +125,29 @@ Les interfaces sont disponibles aux adresses suivantes :
 | API | <http://127.0.0.1:8000> |
 | Swagger UI | <http://127.0.0.1:8000/docs> |
 | ReDoc | <http://127.0.0.1:8000/redoc> |
+| Dashboard Streamlit | <http://127.0.0.1:8501> |
 | Airflow | <http://127.0.0.1:8080> |
 
 Le compte Airflow de développement est initialisé par `airflow-init`. Les
 identifiants définis dans `docker-compose.yml` doivent être remplacés avant
 toute utilisation dans un environnement partagé ou de production.
+
+### Utiliser le dashboard météo
+
+Ouvrir <http://127.0.0.1:8501> après le démarrage des services, puis
+sélectionner une ville dans la barre latérale. Le dashboard affiche :
+
+- la dernière mise à jour et le nombre de mesures disponibles pour la ville ;
+- un état de fraîcheur indiquant si les dernières données datent de plus de
+  trois heures ;
+- un graphique des 48 dernières températures de la couche Silver ;
+- les températures minimale, moyenne et maximale du dernier jour disponible ;
+- l'historique journalier Gold, incluant l'humidité moyenne et le nombre de
+  mesures.
+
+Le bouton **Actualiser les données** vide le cache du dashboard et recharge les
+données depuis PostgreSQL. Les données récentes sont mises en cache pendant
+60 secondes et la liste des villes pendant 5 minutes.
 
 Arrêter les services sans supprimer les données :
 
