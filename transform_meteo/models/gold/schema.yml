@@ -1,0 +1,15 @@
+version: 2
+
+models:
+  - name: mart_daily_weather_summary
+    description: "Agrégats météorologiques quotidiens par ville."
+    columns:
+      - name: city_name
+        data_tests:
+          - not_null
+      - name: metric_date
+        data_tests:
+          - not_null
+      - name: total_measurements
+        data_tests:
+          - not_null

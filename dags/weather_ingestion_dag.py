@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 import urllib.request
 import json
 from airflow import DAG
+from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
 
 
@@ -42,4 +43,36 @@ with DAG(
         python_callable=trigger_weather_ingest,
     )
 
-    ingest_task
+    dbt_run_silver = BashOperator(
+        task_id="dbt_run_silver",
+        bash_command=(
+            "cd /opt/airflow/transform_meteo && "
+            "dbt run --select path:models/silver"
+        ),
+    )
+
+    dbt_test_silver = BashOperator(
+        task_id="dbt_test_silver",
+        bash_command=(
+            "cd /opt/airflow/transform_meteo && "
+            "dbt test --select path:models/silver"
+        ),
+    )
+
+    dbt_run_gold = BashOperator(
+        task_id="dbt_run_gold",
+        bash_command=(
+            "cd /opt/airflow/transform_meteo && "
+            "dbt run --select path:models/gold"
+        ),
+    )
+
+    dbt_test_gold = BashOperator(
+        task_id="dbt_test_gold",
+        bash_command=(
+            "cd /opt/airflow/transform_meteo && "
+            "dbt test --select path:models/gold"
+        ),
+    )
+
+    ingest_task >> dbt_run_silver >> dbt_test_silver >> dbt_run_gold >> dbt_test_gold

@@ -7,7 +7,7 @@
 
 with source as (
     -- On va chercher les données brutes de la table Bronze (via airflow)
-    select * from public.weather_measurements
+    select * from {{ source('meteo_bronze', 'weather_measurements') }}
 ), 
 
 cleaned as (

@@ -17,7 +17,7 @@ FastAPI ──► PostgreSQL (public.weather_measurements / couche Bronze)
 Airflow (DAG horaire)
     │
     ▼
-dbt ──► silver.silver_weather (couche Silver incrémentale)
+dbt ──► silver.silver_weather ──► gold.mart_daily_weather_summary
 ```
 
 Le dépôt contient les principaux composants suivants :
@@ -51,6 +51,10 @@ docker-compose.yml            PostgreSQL, API et services Airflow
     le maximum déjà présent dans la table cible ;
   - vérifie les colonnes `city_name`, `temperature_2m` et `recorded_at` avec
     des tests `not_null`.
+- Modèle dbt Gold `mart_daily_weather_summary`, matérialisé en table dans le
+  schéma PostgreSQL `gold`, avec les agrégats journaliers par ville
+  (température moyenne, minimale, maximale, humidité moyenne et nombre de
+  mesures).
 
 ## Prérequis
 
@@ -62,11 +66,19 @@ docker-compose.yml            PostgreSQL, API et services Airflow
 
 ## Démarrage avec Docker Compose
 
-Le démarrage recommandé lance PostgreSQL, l'API FastAPI et Airflow :
+Le démarrage recommandé lance PostgreSQL, l'API FastAPI et Airflow avec une
+image Airflow locale contenant `dbt-core` et `dbt-postgres` :
 
 ```bash
+copy transform_meteo\profiles.yml.example transform_meteo\profiles.yml
 docker compose up -d --build
 ```
+
+Le fichier `transform_meteo/profiles.yml` est ignoré par Git. Il lit les
+paramètres de connexion dans les variables `DBT_DB_HOST`, `DBT_DB_PORT`,
+`DBT_DB_USER`, `DBT_DB_PASSWORD`, `DBT_DB_NAME`, `DBT_DB_SCHEMA` et
+`DBT_THREADS`, fournies aux conteneurs Airflow par `docker-compose.yml`.
+Adaptez ces variables si les identifiants PostgreSQL changent.
 
 Vérifier l'état des services :
 
@@ -172,7 +184,13 @@ remplacer la valeur par défaut. Le fichier `.env` est ignoré par Git.
 Le projet dbt se trouve dans `transform_meteo/`. Il doit utiliser la même base
 PostgreSQL que l'API et disposer d'un profil nommé `transform_meteo`.
 
-Depuis le répertoire du projet dbt :
+En local, créer d'abord le profil à partir de l'exemple :
+
+```bash
+copy transform_meteo\profiles.yml.example transform_meteo\profiles.yml
+```
+
+Depuis le répertoire du projet dbt, avec dbt installé localement :
 
 ```bash
 cd transform_meteo
@@ -181,17 +199,52 @@ dbt run
 dbt test
 ```
 
-Le modèle incrémental est construit depuis la table Bronze
-`public.weather_measurements`. Une exécution complète peut être demandée
-lorsqu'une reconstruction de la table Silver est nécessaire :
+Dans le DAG Airflow, les tâches sont exécutées dans une chaîne unique :
+
+```text
+ingest_all_cities_task
+  >> dbt_run_silver
+  >> dbt_test_silver
+  >> dbt_run_gold
+  >> dbt_test_gold
+```
+
+Ainsi, une erreur d'ingestion bloque toutes les transformations dbt, et une
+erreur de test Silver empêche de construire Gold. Le modèle incrémental est
+construit depuis la table Bronze `public.weather_measurements`. Une exécution
+complète peut être demandée lorsqu'une reconstruction de la table Silver est
+nécessaire :
 
 ```bash
 dbt run --full-refresh
 ```
 
-Le profil dbt n'est pas versionné dans ce dépôt afin de ne pas stocker de
-paramètres de connexion. La cible, le schéma et les identifiants doivent être
-adaptés à l'environnement local.
+## Tester le DAG et vérifier les tables
+
+Après `docker compose up -d --build` :
+
+1. Ouvrir Airflow sur <http://127.0.0.1:8080> et se connecter avec le compte
+   de développement `admin` / `admin`.
+2. Ouvrir le DAG `weather_batch_ingestion_dag`, puis l'onglet **Graph**.
+   Le graphe doit afficher l'ingestion suivie de `dbt_run_silver`,
+   `dbt_test_silver`, `dbt_run_gold` et `dbt_test_gold`.
+3. Déclencher le DAG avec **Trigger DAG**. Attendre que les cinq tâches soient
+   vertes. En cas d'échec, consulter les logs de la tâche concernée avant de
+   relancer.
+4. Vérifier les tables produites dans PostgreSQL :
+
+```bash
+docker exec -it appmeteo_db psql -U appmeteo -d appmeteo -c "SELECT COUNT(*) AS bronze_count FROM public.weather_measurements;"
+docker exec -it appmeteo_db psql -U appmeteo -d appmeteo -c "SELECT COUNT(*) AS silver_count FROM silver.silver_weather;"
+docker exec -it appmeteo_db psql -U appmeteo -d appmeteo -c "SELECT * FROM gold.mart_daily_weather_summary ORDER BY metric_date DESC, city_name ASC LIMIT 15;"
+```
+
+Les commandes dbt peuvent aussi être diagnostiquées dans le conteneur
+Scheduler :
+
+```bash
+docker compose exec airflow-scheduler bash -lc "cd /opt/airflow/transform_meteo && dbt debug"
+```
 
 ## Inspection de PostgreSQL
 
@@ -207,11 +260,14 @@ Afficher la structure de la table Bronze :
 docker exec -it appmeteo_db psql -U appmeteo -d appmeteo -c "\d public.weather_measurements"
 ```
 
-Après une exécution dbt, vérifier la table Silver dans le schéma configuré
-par le profil :
+Après une exécution dbt, vérifier les tables Silver et Gold :
 
 ```bash
 docker exec -it appmeteo_db psql -U appmeteo -d appmeteo -c "SELECT * FROM silver.silver_weather ORDER BY recorded_at DESC LIMIT 15;"
+```
+
+```bash
+docker exec -it appmeteo_db psql -U appmeteo -d appmeteo -c "SELECT * FROM gold.mart_daily_weather_summary ORDER BY metric_date DESC, city_name ASC LIMIT 15;"
 ```
 
 ## Tests

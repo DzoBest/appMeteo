@@ -1,0 +1,10 @@
+version: 2
+
+sources:
+  - name: meteo_bronze             
+    description: "Données brutes de météo ingérées par Airflow"
+    database: appmeteo     
+    schema: public               
+    tables:
+      - name: weather_measurements 
+        description: "Mesures météo brutes"
