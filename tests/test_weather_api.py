@@ -4,7 +4,11 @@ from fastapi.testclient import TestClient
 
 from appmeteo.main import app
 
-client = TestClient(app)
+
+@pytest.fixture
+def client():
+    with TestClient(app) as test_client:
+        yield test_client
 
 MOCK_OPEN_METEO_RESPONSE = {
     "latitude": 49.44,
@@ -24,7 +28,7 @@ MOCK_OPEN_METEO_RESPONSE = {
 }
 
 
-def test_health_check():
+def test_health_check(client):
     response = client.get("/")
     assert response.status_code == 200
     data = response.json()
@@ -33,7 +37,7 @@ def test_health_check():
 
 
 @pytest.mark.asyncio
-async def test_weather_endpoint_success():
+async def test_weather_endpoint_success(client):
     with patch(
         "appmeteo.clients.open_meteo_client.httpx.AsyncClient.get",
         new_callable=AsyncMock,
@@ -55,7 +59,7 @@ async def test_weather_endpoint_success():
         assert json_data["current"]["weather_code"] == 1
 
 
-def test_weather_endpoint_invalid_coordinates():
+def test_weather_endpoint_invalid_coordinates(client):
     # Latitude > 90
     response = client.get("/weather?lat=95.0&lon=1.0")
     assert response.status_code == 422
@@ -66,7 +70,7 @@ def test_weather_endpoint_invalid_coordinates():
 
 
 @pytest.mark.asyncio
-async def test_weather_endpoint_upstream_error():
+async def test_weather_endpoint_upstream_error(client):
     import httpx
 
     with patch(
@@ -77,7 +81,7 @@ async def test_weather_endpoint_upstream_error():
         assert response.status_code == 503
         assert "Unable to connect" in response.json()["detail"]
 
-def test_root_health_check_app_name():
+def test_root_health_check_app_name(client):
     response = client.get("/")
 
     assert response.status_code == 200
