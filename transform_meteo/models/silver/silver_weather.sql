@@ -23,8 +23,9 @@ cleaned as (
     
     -- LA CONDITION INCRÉMENTALE PRO :
     {% if is_incremental() %}
-        -- On récupère uniquement les nouvelles mesures plus récentes que le max déjà stocké
-        and recorded_at > (select max(recorded_at) from {{ this }})
+        -- L'ingestion parallèle produit des timestamps légèrement différents
+        -- selon les villes. L'id Bronze permet de conserver tout le lot.
+        and id > (select coalesce(max(id), 0) from {{ this }})
     {% endif %}
 )
 
