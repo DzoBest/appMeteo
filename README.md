@@ -35,7 +35,9 @@ docker-compose.yml            PostgreSQL, API et services Airflow
 - API REST FastAPI documentée avec Swagger et ReDoc.
 - Collecte unitaire pour des coordonnées GPS et enregistrement automatique en
   base.
-- Ingestion batch parallèle des 11 villes du référentiel par défaut :
+- Ingestion batch des 11 villes du référentiel par défaut, avec trois
+  requêtes Open-Meteo simultanées et une reprise automatique en cas de
+  limitation temporaire :
   Paris, Marseille, Lyon, Toulouse, Nice, Nantes, Strasbourg, Montpellier,
   Bordeaux, Lille et Rouen.
 - Stockage des mesures dans PostgreSQL avec :
@@ -47,8 +49,9 @@ docker-compose.yml            PostgreSQL, API et services Airflow
 - Modèle dbt `silver_weather` matérialisé en incrémental :
   - lit `public.weather_measurements` ;
   - conserve les mesures dont la température et l'humidité sont renseignées ;
-  - ne traite, après le premier lancement, que les mesures plus récentes que
-    le maximum déjà présent dans la table cible ;
+  - ne traite, après le premier lancement, que les mesures dont l'identifiant
+    Bronze est supérieur au maximum déjà présent dans la table cible, afin de
+    conserver toutes les villes lors d'une ingestion parallèle ;
   - vérifie les colonnes `city_name`, `temperature_2m` et `recorded_at` avec
     des tests `not_null`.
 - Modèle dbt Gold `mart_daily_weather_summary`, matérialisé en table dans le
@@ -267,6 +270,11 @@ nécessaire :
 ```bash
 dbt run --full-refresh
 ```
+
+Après la correction du filtre incrémental de Silver, exécuter une fois
+`dbt run --full-refresh` pour récupérer les mesures éventuellement ignorées par
+les anciennes exécutions. Les lancements suivants peuvent reprendre le
+traitement incrémental normal.
 
 ## Tester le DAG et vérifier les tables
 
