@@ -25,11 +25,11 @@ MOCK_OPEN_METEO_RESPONSE = {
 
 
 def test_health_check():
-    response = client.get("/health")
+    response = client.get("/")
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "ok"
-    assert "version" in data
+    assert data["app"] == "Weather Data Platform"
 
 
 @pytest.mark.asyncio
@@ -76,3 +76,9 @@ async def test_weather_endpoint_upstream_error():
         response = client.get("/weather?lat=49.4432&lon=1.0993")
         assert response.status_code == 503
         assert "Unable to connect" in response.json()["detail"]
+
+def test_root_health_check_app_name():
+    response = client.get("/")
+
+    assert response.status_code == 200
+    assert response.json()["app"] == "Weather Data Platform"
