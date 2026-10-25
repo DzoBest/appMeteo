@@ -1,5 +1,7 @@
 # AppMeteo - Plateforme de données météorologiques
 
+[![CI](https://github.com/DzoBest/appMeteo/actions/workflows/ci.yml/badge.svg)](https://github.com/DzoBest/appMeteo/actions/workflows/ci.yml)
+
 AppMeteo collecte les données météo d'Open-Meteo, les stocke dans PostgreSQL,
 puis les transforme avec dbt. L'application expose une API FastAPI et un DAG
 Airflow orchestre l'ingestion périodique des villes configurées.
@@ -27,6 +29,8 @@ src/appmeteo/                 API, services, repositories et modèles SQLModel
 dags/weather_ingestion_dag.py DAG Airflow d'ingestion multi-villes
 transform_meteo/              Projet dbt et modèle Silver
 tests/                        Tests de l'API
+dashboard/                    Interface Streamlit de visualisation
+.github/workflows/ci.yml      Workflow GitHub Actions de tests automatisés
 docker-compose.yml            PostgreSQL, API et services Airflow
 ```
 
@@ -49,6 +53,8 @@ docker-compose.yml            PostgreSQL, API et services Airflow
 - Modèle dbt `silver_weather` matérialisé en incrémental :
   - lit `public.weather_measurements` ;
   - conserve les mesures dont la température et l'humidité sont renseignées ;
+  - exclut les mesures sans `city_name` afin de garantir la qualité de la
+    couche analytique ;
   - ne traite, après le premier lancement, que les mesures dont l'identifiant
     Bronze est supérieur au maximum déjà présent dans la table cible, afin de
     conserver toutes les villes lors d'une ingestion parallèle ;
@@ -337,3 +343,23 @@ uv run pytest
 
 Les tests couvrent notamment la validation des coordonnées et les réponses de
 l'API en cas de succès ou d'indisponibilité d'Open-Meteo.
+
+## Intégration continue avec GitHub Actions
+
+Le workflow [ci.yml](.github/workflows/ci.yml) s'exécute automatiquement à
+chaque `push` et à chaque Pull Request. Il :
+
+1. démarre un PostgreSQL 16 temporaire ;
+2. installe Python 3.12 et les dépendances verrouillées avec `uv` ;
+3. initialise les tables SQLModel de la base de test ;
+4. exécute `uv run pytest`.
+
+Pour reproduire localement les tests :
+
+```bash
+uv sync --frozen
+uv run pytest
+```
+
+La CI utilise une base PostgreSQL temporaire indépendante de la base Docker
+locale. Le badge en haut du README indique l'état du dernier workflow.
