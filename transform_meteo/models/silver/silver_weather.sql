@@ -19,7 +19,9 @@ cleaned as (
         city_name,
         recorded_at
     from source
-    where temperature_2m is not null and relative_humidity_2m is not null
+    where temperature_2m is not null
+    and relative_humidity_2m is not null 
+    and city_name is not null
     
     -- LA CONDITION INCRÉMENTALE PRO :
     {% if is_incremental() %}
