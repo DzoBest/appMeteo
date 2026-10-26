@@ -22,6 +22,32 @@ Airflow (DAG horaire)
 dbt ──► silver.silver_weather ──► gold.mart_daily_weather_summary
 ```
 
+## Aperçu de la plateforme
+
+Quelques vues de l'application et de son pipeline de données :
+
+### API REST — Swagger UI
+
+L'API FastAPI expose une documentation OpenAPI interactive avec les endpoints
+de consultation, d'ingestion et d'historique météo.
+
+![Documentation Swagger de l'API AppMeteo](docs/images/swagger.png)
+
+### Orchestration — Airflow
+
+Le DAG Airflow exécute séquentiellement l'ingestion, les transformations dbt
+Silver et Gold, ainsi que leurs tests de qualité.
+
+![Graphe du DAG Airflow](docs/images/airflow-dag.png)
+
+### Visualisation — Dashboard Streamlit
+
+Le dashboard permet de sélectionner une ville, de suivre la fraîcheur des
+données, de visualiser les températures récentes et de consulter les agrégats
+journaliers Gold.
+
+![Dashboard météo AppMeteo](docs/images/dashboard.png)
+
 Le dépôt contient les principaux composants suivants :
 
 ```text
